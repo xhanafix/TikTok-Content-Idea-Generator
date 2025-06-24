@@ -70,6 +70,14 @@
                 placeholder="Describe your product or service..."></textarea>
         </div>
 
+        <!-- Ideal Customer Profile/Avatar/Persona -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Ideal Customer Profile / Avatar / Persona</h2>
+            <textarea id="customerProfile" rows="3"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Describe your ideal customer, avatar, or persona (e.g., age, interests, pain points, etc.)..."></textarea>
+        </div>
+
         <!-- Generate Button -->
         <div class="text-center mb-6">
             <button id="generateBtn" 
@@ -125,6 +133,7 @@
         const customModelContainer = document.getElementById('customModelContainer');
         const customModel = document.getElementById('customModel');
         const productDescription = document.getElementById('productDescription');
+        const customerProfile = document.getElementById('customerProfile');
         const generateBtn = document.getElementById('generateBtn');
         const loadingSpinner = document.getElementById('loadingSpinner');
         const errorMessage = document.getElementById('errorMessage');
@@ -183,6 +192,7 @@
             
             const apiKey = apiKeyInput.value.trim();
             const description = productDescription.value.trim();
+            const profile = customerProfile.value.trim();
             let selectedModel = modelSelect.value;
 
             // Handle custom model
@@ -194,8 +204,8 @@
                 }
             }
 
-            if (!apiKey || !description) {
-                showError('Please provide both API key and product description');
+            if (!apiKey || !description || !profile) {
+                showError('Please provide API key, product description, and ideal customer profile');
                 return;
             }
 
@@ -214,7 +224,7 @@
             try {
                 for (let startDay = 1; startDay <= totalDays; startDay += chunkSize) {
                     const endDay = Math.min(startDay + chunkSize - 1, totalDays);
-                    const chunk = await generateChunk(apiKey, selectedModel, description, startDay, endDay);
+                    const chunk = await generateChunk(apiKey, selectedModel, description, profile, startDay, endDay);
                     generatedIdeas = [...generatedIdeas, ...chunk];
                     
                     // Update progress
@@ -242,13 +252,8 @@
             }
         });
 
-        async function generateChunk(apiKey, model, description, startDay, endDay) {
-            const prompt = `Generate ${endDay - startDay + 1} TikTok content ideas for the following product/service: "${description}". 
-                For each idea, provide the day number and the idea content.
-                Make the ideas creative, engaging, and suitable for short-form video content.
-                Ensure the ideas are diverse and cover different aspects of the product/service.
-                Format each idea as: Day X: [idea content]
-                Make sure to include days ${startDay} through ${endDay}.`;
+        async function generateChunk(apiKey, model, description, profile, startDay, endDay) {
+            const prompt = `Generate ${endDay - startDay + 1} TikTok content ideas for the following product/service: "${description}".\n\nThe content should resonate with this ideal customer profile/avatar/persona: "${profile}".\n\nFor each idea, provide the day number and the idea content.\nMake the ideas creative, engaging, and suitable for short-form video content.\nEnsure the ideas are diverse and cover different aspects of the product/service.\nFormat each idea as: Day X: [idea content]\nMake sure to include days ${startDay} through ${endDay}.`;
 
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
                 method: 'POST',
